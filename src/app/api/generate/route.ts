@@ -3,7 +3,7 @@ import { z } from "zod";
 import { streamClaude, type ClaudeEvent } from "@/lib/claude";
 import { DOCS_DIR, readDsConfig, themeCssPath } from "@/lib/ds-config";
 
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 const RequestSchema = z.object({
   prompt: z.string().default(""),

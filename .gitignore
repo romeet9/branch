@@ -50,3 +50,5 @@ src/app/(studio)/weft-theme.css
 /src/app/(studio)/weft-theme.css
 *.tsbuildinfo
 .env*.local
+/.vercelignore
+.vercel

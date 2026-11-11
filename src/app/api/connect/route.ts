@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { z } from "zod";
 
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 const Body = z.object({ path: z.string().min(1), storybookUrl: z.string().optional() });
 

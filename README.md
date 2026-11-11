@@ -2,6 +2,8 @@
 
 ![Status: alpha](https://img.shields.io/badge/status-alpha-f59e0b) ![Demo](https://img.shields.io/badge/demo-work%20in%20progress-6b7280)
 
+**Live demo:** [branch-fawn.vercel.app](https://branch-fawn.vercel.app) (view-only: prompting needs your local Claude Code, so run it locally to design)
+
 > **Alpha.** This is my own design workflow, shared as a demo. Expect rough edges and breaking changes.
 
 ![Branch: iterations of a pricing card on one canvas, with the chat on the right](docs/screenshot.jpg)
