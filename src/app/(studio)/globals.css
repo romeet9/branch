@@ -1,0 +1,176 @@
+@import "@greenloom-ai/weft/fonts.css";
+@import "tailwindcss";
+/* Branch's own UI is built with Weft: its tokens, type, radii, shadows and dark mode. */
+@import "./weft-theme.css";
+@source "../../components";
+
+html,
+body {
+  height: 100%;
+}
+body {
+  background: var(--color-surface-background);
+  color: var(--color-surface-foreground);
+}
+
+/* ---------- canvas (React Flow) on Weft tokens ---------- */
+.branch-canvas {
+  --xy-background-color: var(--color-content-muted);
+  --xy-edge-stroke: var(--color-line-input);
+  --xy-selection-background-color: color-mix(in oklab, var(--color-action-primary) 10%, transparent);
+  --xy-selection-border: 1px solid var(--color-action-primary);
+}
+.branch-canvas .react-flow__node {
+  cursor: default;
+}
+.branch-hand .react-flow__pane {
+  cursor: grab;
+}
+.branch-hand .react-flow__pane.dragging {
+  cursor: grabbing;
+}
+.react-flow__nodesselection-rect {
+  display: none;
+}
+
+/* connector ports also show while hovering the line itself */
+.react-flow__edge:hover .branch-port {
+  opacity: 1;
+}
+
+/* Claude Code-style shimmer on the active status label */
+.branch-shimmer {
+  background: linear-gradient(90deg, var(--color-content-muted-foreground) 0%, var(--color-surface-foreground) 50%, var(--color-content-muted-foreground) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: branch-shimmer 1.6s linear infinite;
+}
+@keyframes branch-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .branch-shimmer { animation: none; color: var(--color-content-muted-foreground); background: none; }
+}
+
+/* ---- frame states: error (red) and fixing (yellow) ---- */
+/* card fades + un-blurs in when a frame enters the state */
+@keyframes branch-state-in {
+  from { opacity: 0; filter: blur(6px); }
+  to { opacity: 1; filter: blur(0); }
+}
+.branch-state-in { animation: branch-state-in 320ms ease-out both; }
+
+/* marching dashed border (SVG rect) */
+@keyframes branch-ants { to { stroke-dashoffset: -12; } }
+.branch-ants { animation: branch-ants 0.7s linear infinite; }
+.branch-ants-slow { animation: branch-ants 3s linear infinite; }
+
+/* error: 45° stripes drift slowly (one stripe period along x = 8px * √2) */
+@keyframes branch-stripes { from { transform: translateX(0); } to { transform: translateX(-11.3137px); } }
+.branch-stripes { animation: branch-stripes 1.2s linear infinite; }
+
+/* fixing: dot grid drifts diagonally and breathes */
+@keyframes branch-dots {
+  0% { background-position: 0 0; opacity: 0.55; }
+  50% { opacity: 1; }
+  100% { background-position: 8px 8px; opacity: 0.55; }
+}
+.branch-dots { animation: branch-dots 1s linear infinite; }
+
+/* status marker by the label */
+@keyframes branch-marker {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.45; }
+}
+.branch-marker { animation: branch-marker 1.2s ease-in-out infinite; }
+.branch-marker-slow { animation: branch-marker 2.4s ease-in-out infinite; }
+
+/* ---- connectors ---- */
+/* branch: a new line grows out of the parent's port (pathLength 1) */
+@keyframes branch-edge-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.branch-edge-draw { stroke-dasharray: 1; animation: branch-edge-draw 700ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* error line fades in under the snap */
+@keyframes branch-fade-in { from { opacity: 0; } }
+.branch-edge-dash-in { animation: branch-fade-in 360ms ease-out 120ms both; }
+
+/* the parent's port pops, rings burst at both ends */
+.branch-port-pop, .branch-port-ring { transform-box: fill-box; transform-origin: center; }
+@keyframes branch-port-pop {
+  0% { transform: scale(0); opacity: 1; }
+  35% { transform: scale(1.6); opacity: 1; }
+  60% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.branch-port-pop { animation: branch-port-pop 900ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes branch-port-ring {
+  0% { transform: scale(0.6); opacity: 0; }
+  15% { opacity: 0.8; }
+  100% { transform: scale(3.4); opacity: 0; }
+}
+.branch-port-ring { animation: branch-port-ring 620ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* new frame scales in from its left edge as the line lands */
+@keyframes branch-node-in { from { opacity: 0; transform: scale(0.94); } }
+.branch-node-in { transform-origin: left center; animation: branch-node-in 480ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+
+/* working: comet layers travel parent -> child (per-layer offsets via --from / --to keep the heads aligned) */
+@keyframes branch-comet { from { stroke-dashoffset: var(--from); } to { stroke-dashoffset: var(--to); } }
+.branch-comet { animation: branch-comet 1.9s cubic-bezier(0.45, 0.05, 0.35, 1) infinite both; }
+.branch-edge-tint { animation: branch-fade-in 300ms ease-out both; }
+
+/* done: a single bright pulse, and the line flashes then settles */
+.branch-comet-once { animation: branch-comet 720ms cubic-bezier(0.5, 0, 0.2, 1) 1 both; }
+@keyframes branch-edge-flash { 0% { opacity: 0; } 55% { opacity: 0.7; } 100% { opacity: 0; } }
+.branch-edge-flash { animation: branch-edge-flash 1100ms ease-out both; }
+
+/* error: the line snaps back toward the parent */
+@keyframes branch-edge-snap {
+  0% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 1; opacity: 0.2; }
+}
+.branch-edge-snap { animation: branch-edge-snap 380ms cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+
+/* lineage: the green glow traces down from the root to the selection */
+@keyframes branch-edge-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.branch-edge-trace { stroke-dasharray: 1 2; animation: branch-edge-trace 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-state-in, .branch-ants, .branch-ants-slow, .branch-stripes, .branch-dots,
+  .branch-marker, .branch-marker-slow, .branch-edge-draw, .branch-edge-dash-in, .branch-edge-tint,
+  .branch-node-in, .branch-edge-trace { animation: none; }
+  /* travelling / one-shot effects are hidden; the tinted track and lineage glow still carry the meaning */
+  .branch-comet, .branch-comet-once, .branch-edge-flash, .branch-edge-snap, .branch-port-pop, .branch-port-ring { display: none; }
+}
+
+/* connectors: plain dashes marching parent → child while a frame is designed (green) or fixed (yellow) */
+@keyframes branch-edge-march { to { stroke-dashoffset: calc(var(--period, 12px) * -1); } }
+.branch-edge-march { animation: branch-edge-march 0.8s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .branch-edge-march { animation: none; } }
+
+/* ambient edge light behind a frame being designed: a green/yellow ring that hugs the frame and slowly turns */
+@property --branch-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes branch-angle { to { --branch-angle: 360deg; } }
+@keyframes branch-ambient-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes branch-ambient-breathe { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+.branch-ambient { animation: branch-ambient-in 500ms ease-out both, branch-ambient-breathe 2.8s ease-in-out 500ms infinite; }
+.branch-edge-ring {
+  background: conic-gradient(
+    from var(--branch-angle),
+    var(--color-action-primary),
+    var(--color-feedback-notice-foreground),
+    var(--color-action-primary),
+    var(--color-feedback-notice-foreground),
+    var(--color-action-primary)
+  );
+  /* show only the ring: the padding box minus the content box */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: branch-angle 4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .branch-ambient, .branch-edge-ring { animation: none; }
+}
